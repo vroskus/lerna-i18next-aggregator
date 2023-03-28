@@ -1,0 +1,34 @@
+{
+  "name": "@vroskus/lerna-i18next-aggregator",
+  "version": "1.0.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vroskus/lerna-i18next-aggregator.git"
+  },
+  "description": "Tool to aggregate translations from all lerna packages",
+  "author": "Vilius Roškus",
+  "keywords": [
+    "lerna",
+    "i18next",
+    "i18n"
+  ],
+  "engines": {
+    "node": ">=8"
+  },
+  "bin": {
+    "lerna-i18next-aggregator": "bin/index.js"
+  },
+  "scripts": {
+    "test": "echo 'No tests yet'"
+  },
+  "dependencies": {
+    "i18next-scanner": "^4.2.0",
+    "vinyl-fs": "^3.0.3"
+  },
+  "bugs": {
+    "url": "https://github.com/vroskus/lerna-i18next-aggregator/issues"
+  },
+  "homepage": "https://github.com/vroskus/lerna-i18next-aggregator#readme",
+  "main": "bin/index.js"
+}
