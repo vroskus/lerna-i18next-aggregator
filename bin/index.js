@@ -31,7 +31,7 @@ const checkArgs = () => {
   }
 };
 
-const customTransform = (file, enc, done) => {
+function customTransform(file, enc, done) {
   const {
     parser,
   } = this;
@@ -54,7 +54,7 @@ const customTransform = (file, enc, done) => {
   );
 
   done();
-};
+}
 
 const sort = (input) => Object.keys(input).sort().reduce(
   (obj, key) => {
