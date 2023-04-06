@@ -1,6 +1,6 @@
 {
   "name": "@vroskus/lerna-i18next-aggregator",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -20,11 +20,16 @@
     "lerna-i18next-aggregator": "bin/index.js"
   },
   "scripts": {
-    "test": "echo 'No tests yet'"
+    "test": "npm run test:eslint",
+    "test:eslint": "eslint bin --fix"
   },
   "dependencies": {
     "i18next-scanner": "^4.2.0",
     "vinyl-fs": "^3.0.3"
+  },
+  "devDependencies": {
+    "eslint": "^8.37.0",
+    "eslint-config-airbnb": "^19.0.4"
   },
   "bugs": {
     "url": "https://github.com/vroskus/lerna-i18next-aggregator/issues"

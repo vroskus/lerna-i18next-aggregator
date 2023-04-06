@@ -11,6 +11,7 @@ const packagesDirPath = process.argv[4]; // lerna packages dir path
 const defaultTranslationValue = '__TRANSLATION__';
 const tmpDir = './tmp';
 
+/* eslint-disable-next-line complexity */
 const checkArgs = () => {
   try {
     if (!languagesArg) {
@@ -25,6 +26,7 @@ const checkArgs = () => {
       throw new Error('Arg [2]: Lerna packages directory path is not defined!');
     }
   } catch (error) {
+    /* eslint-disable-next-line no-console */
     console.error(error.message);
 
     process.exit();
@@ -169,13 +171,18 @@ const getCommonTranslationKeys = async (packageNames, rawTranslationKeys) => {
 const getTranslations = async (languages, translationKeys) => {
   const translations = {
   };
+  const trashDataString = fs.readFileSync(`${resourcesDirPath}/trash.json`);
+  const trash = JSON.parse(trashDataString) || {
+  };
 
-  for (const [resource] of Object.entries(translationKeys)) {
-    translations[resource] = {
-
+  for (const [packageName] of Object.entries(translationKeys)) {
+    const packageTranslationKeys = translationKeys[packageName];
+    const packageDataString = fs.readFileSync(`${resourcesDirPath}/${packageName}.json`);
+    const prevTranslations = JSON.parse(packageDataString) || {
     };
-    const dataString = fs.readFileSync(`${resourcesDirPath}/${resource}.json`);
-    const prevTranslations = JSON.parse(dataString);
+
+    translations[packageName] = {
+    };
 
     for (let index = 0; index < languages.length; index += 1) {
       const language = languages[index];
@@ -189,25 +196,39 @@ const getTranslations = async (languages, translationKeys) => {
         };
       }
 
-      for (const [key] of Object.entries(translationKeys[resource])) {
+      if (!trash[language]) {
+        trash[language] = {
+        };
+      }
+
+      for (const [key] of Object.entries(packageTranslationKeys)) {
         if (prevTranslations[language].translation[key]) {
           translation[key] = prevTranslations[language].translation[key];
+
+          delete prevTranslations[language].translation[key];
         } else {
           translation[key] = defaultTranslationValue;
         }
       }
 
-      translations[resource][language] = {
+      translations[packageName][language] = {
         translation: sort(translation),
+      };
+
+      trash[language] = {
+        ...trash[language],
+        ...prevTranslations[language].translation,
       };
     }
   }
+
+  translations.trash = trash;
 
   return translations;
 };
 
 const saveTranslations = async (translations) => {
-  for (const [resource, data] of Object.entries(translations)) {
+  for (const [packageName, data] of Object.entries(translations)) {
     const dataString = JSON.stringify(
       data,
       undefined,
@@ -215,7 +236,7 @@ const saveTranslations = async (translations) => {
     );
 
     fs.writeFileSync(
-      `${resourcesDirPath}/${resource}.json`,
+      `${resourcesDirPath}/${packageName}.json`,
       dataString,
       'utf8',
     );
@@ -232,14 +253,14 @@ const main = async () => {
 
   const rawTranslationKeys = await getTranslationKeys(packageNames);
 
-  const translationKeys = await getCommonTranslationKeys(
+  const translationKeysWithCommon = await getCommonTranslationKeys(
     packageNames,
     rawTranslationKeys,
   );
 
   const translations = await getTranslations(
     languages,
-    translationKeys,
+    translationKeysWithCommon,
   );
 
   await saveTranslations(translations);
