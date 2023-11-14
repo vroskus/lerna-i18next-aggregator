@@ -89,6 +89,7 @@ const extractKeys = (packageName) => {
     vfs.src([
       'js',
       'ts',
+      'tsx',
       'pug',
     ].map((extension) => `${packagesDirPath}/${packageName}/src/**/*.${extension}`))
       .pipe(scanner(
