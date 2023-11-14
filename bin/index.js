@@ -87,9 +87,10 @@ const extractKeys = (packageName) => {
 
   return new Promise((resolve) => {
     vfs.src([
-      `${packagesDirPath}/${packageName}/src/**/*.js`,
-      `${packagesDirPath}/${packageName}/src/**/*.pug`,
-    ])
+      'js',
+      'ts',
+      'pug',
+    ].map((extension) => `${packagesDirPath}/${packageName}/src/**/*.${extension}`))
       .pipe(scanner(
         options,
         customTransform,
@@ -167,13 +168,37 @@ const getCommonTranslationKeys = async (packageNames, rawTranslationKeys) => {
   return translationKeys;
 };
 
+const getTrash = () => {
+  const trashPath = `${resourcesDirPath}/trash.json`;
+  let trash = {
+  };
+
+  if (fs.existsSync(trashPath)) {
+    const trashDataString = fs.readFileSync(trashPath);
+
+    const foundTrash = JSON.parse(trashDataString);
+
+    if (foundTrash) {
+      trash = foundTrash;
+    }
+  } else {
+    const trashDataString = JSON.stringify(trash);
+
+    fs.writeFileSync(
+      trashPath,
+      trashDataString,
+      'utf8',
+    );
+  }
+
+  return trash;
+};
+
 /* eslint-disable-next-line complexity */
 const getTranslations = async (languages, translationKeys) => {
   const translations = {
   };
-  const trashDataString = fs.readFileSync(`${resourcesDirPath}/trash.json`);
-  const trash = JSON.parse(trashDataString) || {
-  };
+  const trash = getTrash();
 
   for (const [packageName] of Object.entries(translationKeys)) {
     const packageTranslationKeys = translationKeys[packageName];
