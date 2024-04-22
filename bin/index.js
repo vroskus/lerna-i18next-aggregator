@@ -1,5 +1,7 @@
 #! /usr/bin/env node
 
+/* eslint-disable no-console */
+
 const fs = require('fs');
 const scanner = require('i18next-scanner');
 const vfs = require('vinyl-fs');
@@ -10,6 +12,13 @@ const packagesDirPath = process.argv[4]; // lerna packages dir path
 
 const defaultTranslationValue = '__TRANSLATION__';
 const tmpDir = './tmp';
+const fileExtensions = [
+  'js',
+  'jsx',
+  'ts',
+  'tsx',
+  'pug',
+];
 
 /* eslint-disable-next-line complexity */
 const checkArgs = () => {
@@ -26,7 +35,6 @@ const checkArgs = () => {
       throw new Error('Arg [2]: Lerna packages directory path is not defined!');
     }
   } catch (error) {
-    /* eslint-disable-next-line no-console */
     console.error(error.message);
 
     process.exit();
@@ -37,6 +45,7 @@ function customTransform(file, enc, done) {
   const {
     parser,
   } = this;
+
   const content = fs.readFileSync(
     file.path,
     enc,
@@ -85,13 +94,13 @@ const extractKeys = (packageName) => {
     },
   };
 
+  const filePaths = fileExtensions.map((
+    fileExtension,
+  ) => `${packagesDirPath}/${packageName}/src/**/*.${fileExtension}`);
+
   return new Promise((resolve) => {
-    vfs.src([
-      'js',
-      'ts',
-      'tsx',
-      'pug',
-    ].map((extension) => `${packagesDirPath}/${packageName}/src/**/*.${extension}`))
+    vfs
+      .src(filePaths)
       .pipe(scanner(
         options,
         customTransform,
@@ -119,7 +128,8 @@ const getTranslationKeys = async (packageNames) => {
   for (let index = 0; index < packageNames.length; index += 1) {
     const packageName = packageNames[index];
 
-    const dataString = fs.readFileSync(`${tmpDir}/${packageName}.json`);
+    const dataFilePath = `${tmpDir}/${packageName}.json`;
+    const dataString = fs.readFileSync(dataFilePath);
     const data = JSON.parse(dataString);
 
     translationKeys[packageName] = data;
@@ -203,7 +213,8 @@ const getTranslations = async (languages, translationKeys) => {
 
   for (const [packageName] of Object.entries(translationKeys)) {
     const packageTranslationKeys = translationKeys[packageName];
-    const packageDataString = fs.readFileSync(`${resourcesDirPath}/${packageName}.json`);
+    const packageFilePath = `${resourcesDirPath}/${packageName}.json`;
+    const packageDataString = fs.readFileSync(packageFilePath);
     const prevTranslations = JSON.parse(packageDataString) || {
     };
 
@@ -273,7 +284,18 @@ const main = async () => {
   checkArgs();
 
   const languages = languagesArg.split(',');
+
+  console.info(
+    'Languages:',
+    languages,
+  );
+
   const packageNames = getPackageNames(resourcesDirPath);
+
+  console.info(
+    'Packages:',
+    packageNames,
+  );
 
   await extract(packageNames);
 
