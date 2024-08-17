@@ -25,13 +25,12 @@
     "build": "echo 'Nothing to build'"
   },
   "dependencies": {
-    "i18next-scanner": "^4.4.0",
+    "i18next-scanner": "^4.5.0",
     "vinyl-fs": "3.0.3"
   },
   "devDependencies": {
-    "eslint": "^8.57.0",
-    "eslint-config-airbnb": "^19.0.4",
-    "eslint-plugin-import": "^2.29.1"
+    "@vroskus/eslint-config": "^1.0.6",
+    "eslint": "^9.9.0"
   },
   "bugs": {
     "url": "https://github.com/vroskus/lerna-i18next-aggregator/issues"
