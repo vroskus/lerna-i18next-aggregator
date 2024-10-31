@@ -9,6 +9,7 @@ const vfs = require('vinyl-fs');
 const languagesArg = process.argv[2]; // languages
 const resourcesDirPath = process.argv[3]; // resource files dir path
 const packagesDirPath = process.argv[4]; // lerna packages dir path
+const labelsFilePath = process.argv[5]; // labels file path
 
 const defaultTranslationValue = '__TRANSLATION__';
 const tmpDir = './tmp';
@@ -80,23 +81,19 @@ const sort = (input) => Object.keys(input).sort().reduce(
 );
 
 const getPackageNames = (dirPath) => fs.readdirSync(dirPath)
-  .filter((file) => file !== 'common.json')
+  .filter((file) => ['common.json', 'labels.json'].includes(file) === false)
   .map((file) => file.replace(
     '.json',
     '',
   ));
 
-const extractKeys = (packageName) => {
+const extractKeys = (filePaths, translationSourceFile) => {
   const options = {
     keySeparator: false,
     resource: {
-      savePath: `${packageName}.json`,
+      savePath: `${translationSourceFile}.json`,
     },
   };
-
-  const filePaths = fileExtensions.map((
-    fileExtension,
-  ) => `${packagesDirPath}/${packageName}/src/**/*.${fileExtension}`);
 
   return new Promise((resolve) => {
     vfs
@@ -113,43 +110,57 @@ const extractKeys = (packageName) => {
   });
 };
 
-const extract = async (packageNames) => {
+const extractPackagesKeys = async (packageNames) => {
   for (let index = 0; index < packageNames.length; index += 1) {
     const packageName = packageNames[index];
 
-    await extractKeys(packageName);
+    const filePaths = fileExtensions.map((
+      fileExtension,
+    ) => `${packagesDirPath}/${packageName}/src/**/*.${fileExtension}`);
+
+    await extractKeys(
+      filePaths,
+      packageName,
+    );
   }
 };
 
-const getTranslationKeys = async (packageNames) => {
+const extractLabelsKeys = async (filePath) => {
+  await extractKeys(
+    [filePath],
+    'labels',
+  );
+};
+
+const getTranslationKeys = async (translationSourceFiles) => {
   const translationKeys = {
   };
 
-  for (let index = 0; index < packageNames.length; index += 1) {
-    const packageName = packageNames[index];
+  for (let index = 0; index < translationSourceFiles.length; index += 1) {
+    const translationSourceFile = translationSourceFiles[index];
 
-    const dataFilePath = `${tmpDir}/${packageName}.json`;
+    const dataFilePath = `${tmpDir}/${translationSourceFile}.json`;
     const dataString = fs.readFileSync(dataFilePath);
     const data = JSON.parse(dataString);
 
-    translationKeys[packageName] = data;
+    translationKeys[translationSourceFile] = data;
   }
 
   return translationKeys;
 };
 
 /* eslint-disable-next-line complexity */
-const getCommonTranslationKeys = async (packageNames, rawTranslationKeys) => {
+const getCommonTranslationKeys = async (translationSourceFiles, rawTranslationKeys) => {
   const translationKeys = rawTranslationKeys;
   const rawCommon = {
   };
   const common = {
   };
 
-  for (let index = 0; index < packageNames.length; index += 1) {
-    const packageName = packageNames[index];
+  for (let index = 0; index < translationSourceFiles.length; index += 1) {
+    const translationSourceFile = translationSourceFiles[index];
 
-    for (const [key] of Object.entries(translationKeys[packageName])) {
+    for (const [key] of Object.entries(translationKeys[translationSourceFile])) {
       if (rawCommon[key]) {
         rawCommon[key] += 1;
       } else {
@@ -164,12 +175,12 @@ const getCommonTranslationKeys = async (packageNames, rawTranslationKeys) => {
     }
   }
 
-  for (let index = 0; index < packageNames.length; index += 1) {
-    const packageName = packageNames[index];
+  for (let index = 0; index < translationSourceFiles.length; index += 1) {
+    const translationSourceFile = translationSourceFiles[index];
 
     for (const [key] of Object.entries(common)) {
-      if (translationKeys[packageName][key]) {
-        delete translationKeys[packageName][key];
+      if (translationKeys[translationSourceFile][key]) {
+        delete translationKeys[translationSourceFile][key];
       }
     }
   }
@@ -211,14 +222,14 @@ const getTranslations = async (languages, translationKeys) => {
   };
   const trash = getTrash();
 
-  for (const [packageName] of Object.entries(translationKeys)) {
-    const packageTranslationKeys = translationKeys[packageName];
-    const packageFilePath = `${resourcesDirPath}/${packageName}.json`;
+  for (const [translationSourceFile] of Object.entries(translationKeys)) {
+    const packageTranslationKeys = translationKeys[translationSourceFile];
+    const packageFilePath = `${resourcesDirPath}/${translationSourceFile}.json`;
     const packageDataString = fs.readFileSync(packageFilePath);
     const prevTranslations = JSON.parse(packageDataString) || {
     };
 
-    translations[packageName] = {
+    translations[translationSourceFile] = {
     };
 
     for (let index = 0; index < languages.length; index += 1) {
@@ -248,7 +259,7 @@ const getTranslations = async (languages, translationKeys) => {
         }
       }
 
-      translations[packageName][language] = {
+      translations[translationSourceFile][language] = {
         translation: sort(translation),
       };
 
@@ -297,12 +308,20 @@ const main = async () => {
     packageNames,
   );
 
-  await extract(packageNames);
+  await extractPackagesKeys(packageNames);
 
-  const rawTranslationKeys = await getTranslationKeys(packageNames);
+  const translationSourceFiles = packageNames;
+
+  if (labelsFilePath) {
+    await extractLabelsKeys(labelsFilePath);
+
+    translationSourceFiles.push('labels');
+  }
+
+  const rawTranslationKeys = await getTranslationKeys(translationSourceFiles);
 
   const translationKeysWithCommon = await getCommonTranslationKeys(
-    packageNames,
+    translationSourceFiles,
     rawTranslationKeys,
   );
 
