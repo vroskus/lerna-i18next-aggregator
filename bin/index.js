@@ -111,9 +111,7 @@ const extractKeys = (filePaths, translationSourceFile) => {
 };
 
 const extractPackagesKeys = async (packageNames) => {
-  for (let index = 0; index < packageNames.length; index += 1) {
-    const packageName = packageNames[index];
-
+  for (const packageName of packageNames) {
     const filePaths = fileExtensions.map((
       fileExtension,
     ) => `${packagesDirPath}/${packageName}/src/**/*.${fileExtension}`);
@@ -136,9 +134,7 @@ const getTranslationKeys = async (translationSourceFiles) => {
   const translationKeys = {
   };
 
-  for (let index = 0; index < translationSourceFiles.length; index += 1) {
-    const translationSourceFile = translationSourceFiles[index];
-
+  for (const translationSourceFile of translationSourceFiles) {
     const dataFilePath = `${tmpDir}/${translationSourceFile}.json`;
     const dataString = fs.readFileSync(dataFilePath);
     const data = JSON.parse(dataString);
@@ -149,7 +145,7 @@ const getTranslationKeys = async (translationSourceFiles) => {
   return translationKeys;
 };
 
-/* eslint-disable-next-line complexity */
+/* eslint-disable-next-line complexity,sonarjs/cognitive-complexity */
 const getCommonTranslationKeys = async (translationSourceFiles, rawTranslationKeys) => {
   const translationKeys = rawTranslationKeys;
   const rawCommon = {
@@ -157,9 +153,7 @@ const getCommonTranslationKeys = async (translationSourceFiles, rawTranslationKe
   const common = {
   };
 
-  for (let index = 0; index < translationSourceFiles.length; index += 1) {
-    const translationSourceFile = translationSourceFiles[index];
-
+  for (const translationSourceFile of translationSourceFiles) {
     for (const [key] of Object.entries(translationKeys[translationSourceFile])) {
       if (rawCommon[key]) {
         rawCommon[key] += 1;
@@ -175,9 +169,7 @@ const getCommonTranslationKeys = async (translationSourceFiles, rawTranslationKe
     }
   }
 
-  for (let index = 0; index < translationSourceFiles.length; index += 1) {
-    const translationSourceFile = translationSourceFiles[index];
-
+  for (const translationSourceFile of translationSourceFiles) {
     for (const [key] of Object.entries(common)) {
       if (translationKeys[translationSourceFile][key]) {
         delete translationKeys[translationSourceFile][key];
@@ -216,7 +208,7 @@ const getTrash = () => {
   return trash;
 };
 
-/* eslint-disable-next-line complexity */
+/* eslint-disable-next-line complexity,sonarjs/cognitive-complexity */
 const getTranslations = async (languages, translationKeys) => {
   const translations = {
   };
@@ -232,8 +224,7 @@ const getTranslations = async (languages, translationKeys) => {
     translations[translationSourceFile] = {
     };
 
-    for (let index = 0; index < languages.length; index += 1) {
-      const language = languages[index];
+    for (const language of languages) {
       const translation = {
       };
 
