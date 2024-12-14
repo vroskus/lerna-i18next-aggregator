@@ -1,7 +1,5 @@
 #! /usr/bin/env node
 
-/* eslint-disable no-console */
-
 const fs = require('fs');
 const scanner = require('i18next-scanner');
 const vfs = require('vinyl-fs');
@@ -20,6 +18,8 @@ const fileExtensions = [
   'tsx',
   'pug',
 ];
+
+const identSize = 2;
 
 /* eslint-disable-next-line complexity */
 const checkArgs = () => {
@@ -152,6 +152,7 @@ const getCommonTranslationKeys = async (translationSourceFiles, rawTranslationKe
   };
   const common = {
   };
+  const minimalAmount = 1;
 
   for (const translationSourceFile of translationSourceFiles) {
     for (const [key] of Object.entries(translationKeys[translationSourceFile])) {
@@ -164,7 +165,7 @@ const getCommonTranslationKeys = async (translationSourceFiles, rawTranslationKe
   }
 
   for (const [key] of Object.entries(rawCommon)) {
-    if (rawCommon[key] > 1) {
+    if (rawCommon[key] > minimalAmount) {
       common[key] = defaultTranslationValue;
     }
   }
@@ -271,7 +272,7 @@ const saveTranslations = async (translations) => {
     const dataString = JSON.stringify(
       data,
       undefined,
-      2,
+      identSize,
     );
 
     fs.writeFileSync(
