@@ -29,7 +29,7 @@
     "vinyl-fs": "3.0.3"
   },
   "devDependencies": {
-    "@vroskus/eslint-config": "^1.0.21"
+    "@vroskus/eslint-config": "^1.0.23"
   },
   "bugs": {
     "url": "https://github.com/vroskus/lerna-i18next-aggregator/issues"
