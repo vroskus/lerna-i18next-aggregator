@@ -55,7 +55,9 @@ function customTransform(file, enc, done) {
   parser.parseFuncFromString(
     content,
     {
-      list: ['t'],
+      list: [
+        't',
+      ],
     },
     (key) => {
       parser.set(
@@ -81,7 +83,10 @@ const sort = (input) => Object.keys(input).sort().reduce(
 );
 
 const getPackageNames = (dirPath) => fs.readdirSync(dirPath)
-  .filter((file) => ['common.json', 'labels.json'].includes(file) === false)
+  .filter((file) => [
+    'common.json',
+    'labels.json',
+  ].includes(file) === false)
   .map((file) => file.replace(
     '.json',
     '',
@@ -125,7 +130,9 @@ const extractPackagesKeys = async (packageNames) => {
 
 const extractLabelsKeys = async (filePath) => {
   await extractKeys(
-    [filePath],
+    [
+      filePath,
+    ],
     'labels',
   );
 };
@@ -155,7 +162,9 @@ const getCommonTranslationKeys = async (translationSourceFiles, rawTranslationKe
   const minimalAmount = 1;
 
   for (const translationSourceFile of translationSourceFiles) {
-    for (const [key] of Object.entries(translationKeys[translationSourceFile])) {
+    for (const [
+      key,
+    ] of Object.entries(translationKeys[translationSourceFile])) {
       if (rawCommon[key]) {
         rawCommon[key] += 1;
       } else {
@@ -164,14 +173,18 @@ const getCommonTranslationKeys = async (translationSourceFiles, rawTranslationKe
     }
   }
 
-  for (const [key] of Object.entries(rawCommon)) {
+  for (const [
+    key,
+  ] of Object.entries(rawCommon)) {
     if (rawCommon[key] > minimalAmount) {
       common[key] = defaultTranslationValue;
     }
   }
 
   for (const translationSourceFile of translationSourceFiles) {
-    for (const [key] of Object.entries(common)) {
+    for (const [
+      key,
+    ] of Object.entries(common)) {
       if (translationKeys[translationSourceFile][key]) {
         delete translationKeys[translationSourceFile][key];
       }
@@ -215,7 +228,9 @@ const getTranslations = async (languages, translationKeys) => {
   };
   const trash = getTrash();
 
-  for (const [translationSourceFile] of Object.entries(translationKeys)) {
+  for (const [
+    translationSourceFile,
+  ] of Object.entries(translationKeys)) {
     const packageTranslationKeys = translationKeys[translationSourceFile];
     const packageFilePath = `${resourcesDirPath}/${translationSourceFile}.json`;
     const packageDataString = fs.readFileSync(packageFilePath);
@@ -241,7 +256,9 @@ const getTranslations = async (languages, translationKeys) => {
         };
       }
 
-      for (const [key] of Object.entries(packageTranslationKeys)) {
+      for (const [
+        key,
+      ] of Object.entries(packageTranslationKeys)) {
         if (prevTranslations[language].translation[key]) {
           translation[key] = prevTranslations[language].translation[key];
 
@@ -268,7 +285,10 @@ const getTranslations = async (languages, translationKeys) => {
 };
 
 const saveTranslations = async (translations) => {
-  for (const [packageName, data] of Object.entries(translations)) {
+  for (const [
+    packageName,
+    data,
+  ] of Object.entries(translations)) {
     const dataString = JSON.stringify(
       data,
       undefined,
